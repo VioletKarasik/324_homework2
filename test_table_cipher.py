@@ -1,48 +1,25 @@
 import unittest
-from table_cipher import EnhancedTableCipher
+from table_cipher import encrypt_tabular, decrypt_tabular
 
-class TestEnhancedTableCipher(unittest.TestCase):
-    def test_encrypt_decrypt_roundtrip_basic(self):
-        cipher = EnhancedTableCipher("ZEBRA")
-        plaintext = "HELLO WORLD"
-        encrypted = cipher.encrypt(plaintext)
-        decrypted = cipher.decrypt(encrypted)
-        self.assertEqual(decrypted, "HELLOWORLD")
-
-    def test_encrypt_decrypt_with_padding(self):
-        cipher = EnhancedTableCipher("KEY")
-        plaintext = "TESTING"
-        encrypted = cipher.encrypt(plaintext)
-        decrypted = cipher.decrypt(encrypted)
-        self.assertEqual(decrypted, "TESTING")
-
-    def test_encrypt_decrypt_lowercase(self):
-        cipher = EnhancedTableCipher("simple")
-        plaintext = "encrypt me please"
-        encrypted = cipher.encrypt(plaintext)
-        decrypted = cipher.decrypt(encrypted)
-        self.assertEqual(decrypted, "ENCRYPTMEPLEASE")
-
-    def test_decrypt_with_padding_xs(self):
-        cipher = EnhancedTableCipher("ABC")
-        plaintext = "FOO"
-        encrypted = cipher.encrypt(plaintext)  # Might pad with 'X'
-        decrypted = cipher.decrypt(encrypted)
-        self.assertEqual(decrypted, "FOO")
-
-    def test_empty_plaintext(self):
-        cipher = EnhancedTableCipher("KEY")
-        self.assertEqual(cipher.encrypt(""), "")
-        self.assertEqual(cipher.decrypt(""), "")
-
-    def test_invalid_key(self):
-        with self.assertRaises(ValueError):
-            EnhancedTableCipher("")
-
-    def test_invalid_decrypt_length(self):
-        cipher = EnhancedTableCipher("LONGKEY")
-        with self.assertRaises(ValueError):
-            cipher.decrypt("TOOSHORT")
+class TestTabularCipher(unittest.TestCase):
+    def test_encrypt_decrypt(self):
+        test_cases = [
+            ("HELLO", "KEY", "EOHLL"),
+            ("CRYPTO", "CODE", "CTYPRO"), 
+            ("TEST", "A", "TEST"),
+            ("SHORT", "LONGKEY", "SHORT")
+        ]
+        
+        for text, key, expected in test_cases:
+            encrypted = encrypt_tabular(text, key)
+            self.assertEqual(encrypted, expected)
+            self.assertEqual(decrypt_tabular(encrypted, key), text)
+    
+    def test_edge_cases(self):
+        self.assertEqual(encrypt_tabular("", "KEY"), "")
+        self.assertEqual(decrypt_tabular("", "KEY"), "")
+        self.assertEqual(encrypt_tabular("A", "B"), "A")
+        self.assertEqual(decrypt_tabular("A", "B"), "A")
 
 if __name__ == "__main__":
     unittest.main()
