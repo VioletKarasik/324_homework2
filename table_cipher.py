@@ -45,7 +45,9 @@ def decrypt_tabular(ciphertext: Union[str, int], key: Union[str, int]) -> str:
     
     cols = len(key)
     if len(ciphertext) % cols != 0:
-        raise ValueError("Длина шифртекста должна быть кратна длине ключа")
+        # Автоматически дополняем шифртекст до нужной длины
+        pad_length = cols - (len(ciphertext) % cols)
+        ciphertext = ciphertext + 'X' * pad_length
     
     rows = len(ciphertext) // cols
     key_order = [i for i, _ in sorted(enumerate(key), key=lambda x: x[1])]
@@ -56,30 +58,10 @@ def decrypt_tabular(ciphertext: Union[str, int], key: Union[str, int]) -> str:
     
     for col in key_order:
         for row in range(rows):
-            table[row][col] = ciphertext[index]
-            index += 1
+            if index < len(ciphertext):
+                table[row][col] = ciphertext[index]
+                index += 1
     
     # Читаем таблицу построчно и удаляем дополнение
     plaintext = ''.join([''.join(row) for row in table])
     return plaintext.rstrip('X')
-
-if __name__ == "__main__":
-    # Примеры использования
-    samples = [
-        ("ATTACK AT DAWN", "LEMON"),
-        ("THE QUICK BROWN FOX", "KEY"),
-        ("PYTHON IS AWESOME", "CODE"),
-        ("KEEP IT SECRET", "LOCK"),
-        ("FINAL TEST CASE", "TEST")
-    ]
-    
-    print("🔐 Табличный шифр - Примеры работы")
-    for i, (text, key) in enumerate(samples, 1):
-        encrypted = encrypt_tabular(text, key)
-        decrypted = decrypt_tabular(encrypted, key)
-        
-        print(f"\nПример {i}:")
-        print(f"Оригинал:  {text}")
-        print(f"Ключ:      {key}")
-        print(f"Шифртекст: {encrypted}")
-        print(f"Расшифровка: {decrypted}")
